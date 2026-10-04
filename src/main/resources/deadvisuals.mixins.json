@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8.5",
+  "package": "com.deadvisuals.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "WorldMixin",
+    "ClientWorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
