@@ -79,8 +79,8 @@ public class DeadTitleScreen extends Screen {
             int y = by(i);
             boolean h = !intro && mx >= x && mx < x + 170 && my >= y && my < y + 22;
             hov[i] += ((h ? 1f : 0f) - hov[i]) * Math.min(1f, dt * 14f);
-            g.fill(x, y, x + 170, y + 22, 0xC0101010);
-            g.fill(x, y, x + 2 + (int) (hov[i] * 8), y + 22, accent);
+            Ui.rrect(g, x, y, 170, 22, 6, 0xC0101014);
+            Ui.rrect(g, x, y, 4 + (int) (hov[i] * 8), 22, 3, accent);
             g.drawTextWithShadow(textRenderer, LABELS[i], x + 14 + (int) (hov[i] * 4), y + 7,
                     Colors.lerp(0xFF8A8A8A, 0xFFFFFFFF, hov[i]));
         }

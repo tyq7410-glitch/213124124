@@ -20,33 +20,22 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 
-public final class Wings {
-    private Wings() {
+public final class Cape {
+    private Cape() {
     }
 
-    private static final String[] STYLES = {"angel", "demon", "dead", "neon", "ice", "gold", "galaxy", "blood", "sakura", "void", "toxic", "fire", "mono"};
-    private static final float[] LEN = {6, 11, 15, 14, 10, 5};
-    private static ModelPart plus;
-    private static ModelPart minus;
+    private static final String[] STYLES = {"angel", "demon", "dead", "neon", "ice", "gold", "galaxy",
+            "blood", "sakura", "void", "toxic", "fire", "mono"};
+    private static ModelPart model;
     private static Identifier[] tex;
-
-    private static ModelPart build(boolean positive) {
-        ModelData md = new ModelData();
-        ModelPartData root = md.getRoot();
-        for (int i = 0; i < LEN.length; i++) {
-            float len = LEN[i];
-            float y = -9 + i * 3;
-            root.addChild("f" + i,
-                    ModelPartBuilder.create().uv(0, i * 4).cuboid(positive ? 0 : -len, y, 0, len, 3, 1),
-                    ModelTransform.NONE);
-        }
-        return TexturedModelData.of(md, 64, 64).createModel();
-    }
+    private static float sway;
 
     private static void init() {
-        if (plus != null) return;
-        plus = build(true);
-        minus = build(false);
+        if (model != null) return;
+        ModelData md = new ModelData();
+        ModelPartData root = md.getRoot();
+        root.addChild("cape", ModelPartBuilder.create().uv(0, 0).cuboid(-5, 0, 0, 10, 16, 1), ModelTransform.NONE);
+        model = TexturedModelData.of(md, 64, 64).createModel();
         tex = new Identifier[STYLES.length];
         for (int i = 0; i < STYLES.length; i++) {
             tex[i] = Identifier.of("deadvisuals", "textures/wings/" + STYLES[i] + ".png");
@@ -54,7 +43,7 @@ public final class Wings {
     }
 
     public static void render(MinecraftClient mc, MatrixStack ms, VertexConsumerProvider vp, Vec3d cam, float pt) {
-        Module m = Mods.WINGS;
+        Module m = Mods.CAPE;
         ClientPlayerEntity p = mc.player;
         if (!m.enabled || p == null || p.isInvisible()) return;
         if (mc.options.getPerspective().isFirstPerson()) return;
@@ -63,15 +52,11 @@ public final class Wings {
 
         Vec3d pos = p.getLerpedPos(pt);
         float yaw = MathHelper.lerpAngleDegrees(pt, p.prevBodyYaw, p.bodyYaw);
-        float t = (Fx.ticks + pt) * 0.15f * (float) m.v("Flap speed");
-        float flap = (float) (Math.sin(t) * m.v("Flap angle"));
-        if (p.isOnGround()) flap *= 0.25f;
-        float ang = (float) m.v("Spread") + flap;
-        plus.yaw = -ang;
-        minus.yaw = ang;
-        float h = (float) m.v("Height");
-        plus.setPivot(3, 4 + h, 2.5f);
-        minus.setPivot(-3, 4 + h, 2.5f);
+        float speed = (float) p.getVelocity().horizontalLength();
+        float target = 0.08f + Math.min(1.1f, speed * 3.5f);
+        sway += (target - sway) * 0.1f;
+        model.pitch = sway + (float) Math.sin((Fx.ticks + pt) * 0.1) * 0.03f;
+        model.setPivot(0, 0, 2.2f);
 
         ms.push();
         ms.translate(pos.x - cam.x, pos.y - cam.y, pos.z - cam.z);
@@ -81,8 +66,7 @@ public final class Wings {
         float s = (float) m.v("Scale");
         ms.scale(s, s, s);
         VertexConsumer vc = vp.getBuffer(RenderLayer.getEntityCutoutNoCull(tex[m.mode("Style")]));
-        plus.render(ms, vc, 0xF000F0, OverlayTexture.DEFAULT_UV);
-        minus.render(ms, vc, 0xF000F0, OverlayTexture.DEFAULT_UV);
+        model.render(ms, vc, 0xF000F0, OverlayTexture.DEFAULT_UV);
         ms.pop();
     }
 }

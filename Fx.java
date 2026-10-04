@@ -50,6 +50,7 @@ public final class Fx {
         int age;
         int life;
         boolean crit;
+        boolean heal;
     }
 
     private static final String[] HIT_MSG = {"nice hit~", "good one!", "keep going!"};
@@ -76,6 +77,9 @@ public final class Fx {
     private static boolean deadHandled;
     private static float shownRatio = 1f;
     private static float hudA;
+
+    public static float lastReach;
+    public static long reachAt;
 
     public static boolean hitRecent() {
         return System.currentTimeMillis() < hitMarkerUntil;
@@ -114,6 +118,8 @@ public final class Fx {
         targetUntil = now + (long) (Mods.THUD.v("Duration") * 1000);
         attackedId = le.getId();
         attackedAt = now;
+        lastReach = (float) Math.max(0.0, p.getEyePos().distanceTo(le.getEyePos()) - le.getWidth() / 2.0);
+        reachAt = now;
         hitMarkerUntil = now + (long) (Mods.MARK.v("Duration") * 50);
 
         if (Mods.SOUND.enabled) {
@@ -177,6 +183,14 @@ public final class Fx {
                 }
                 burst(w, le, wasCrit);
                 Hud2.onHit();
+            } else if (prev != null && hp > prev + 0.49f && le.getId() == attackedId && now - attackedAt < 10000
+                    && Mods.NUM.enabled && Mods.NUM.on("Show heal")) {
+                Dmg d = new Dmg();
+                d.pos = le.getPos().add((RND.nextDouble() - 0.5) * 0.6, le.getHeight() + 0.2, (RND.nextDouble() - 0.5) * 0.6);
+                d.amount = hp - prev;
+                d.heal = true;
+                d.life = (int) Mods.NUM.v("Lifetime");
+                NUMBERS.add(d);
             }
         }
         if (LAST_HP.size() > 512) LAST_HP.clear();
@@ -194,6 +208,7 @@ public final class Fx {
         Emotes.tick();
         Helper.tick(p);
         Cosmetics.tick(w, p);
+        Extra.tick(w, p);
     }
 
     private static void burst(ClientWorld w, LivingEntity le, boolean crit) {
@@ -302,6 +317,7 @@ public final class Fx {
         if (th.enabled && hudTarget != null && hudA > 0.02f) drawTarget(g, mc, th, sw, sh, dt);
 
         Visuals.render(g, mc, sw, sh, now, dt);
+        Hud3.render(g, mc, sw, sh, now);
         Hud2.render(g, mc, sw, sh, now);
         Helper.render(g, mc, sw, sh, now);
     }
@@ -332,14 +348,14 @@ public final class Fx {
         boolean panel = style != 1;
         int pad = panel ? 6 : 0;
         int h = (panel ? 8 : 0) + (showName ? 13 : 0) + (showBar ? 9 : 0) + (line.isEmpty() ? 0 : 11) + (held.isEmpty() ? 0 : 11);
+        Hud2.SIZES.put("target hud", new int[]{w, h});
 
         ms.push();
         ms.translate(x + (1f - hudA) * 30f, y, 0f);
         ms.scale(sc, sc, 1f);
         if (panel) {
-            g.fill(0, 0, w, h, 0xC0090909);
-            g.fill(0, 0, w, 1, accent);
-            g.fill(0, 0, 1, h, accent);
+            Ui.rrect(g, 0, 0, w, h, 5, 0xC00B0B0E);
+            Ui.hgrad(g, 6, 0, w - 12, 1, accent, Ui.ACCENT2);
         }
         int yy = panel ? 5 : 0;
         if (showName) {
@@ -373,6 +389,7 @@ public final class Fx {
         World2.render(ctx, mc, ms, vp, cam, pt);
         Marks.render(ctx, mc, ms, vp, cam);
         Wings.render(mc, ms, vp, cam, pt);
+        Cape.render(mc, ms, vp, cam, pt);
         Pets.render(mc, ms, vp, cam, pt);
         Emotes.render(ctx, mc, ms, vp, cam, pt);
 
@@ -393,9 +410,9 @@ public final class Fx {
             float pop = Math.min(1f, 0.6f + d.age / 4f);
             float sc = 0.035f * (float) m.v("Scale") * pop * (d.crit ? 1.3f : 1f) * (float) Math.max(1.0, dist / 10.0);
             int alpha = m.on("Fade") ? Math.max(8, (int) (255 * (1f - prog * prog))) : 255;
-            int rgb = Colors.pick(d.crit ? m.mode("Crit color") : m.mode("Color"), m.v("Hue"), ticks) & 0xFFFFFF;
+            int rgb = d.heal ? 0x39FF88 : Colors.pick(d.crit ? m.mode("Crit color") : m.mode("Color"), m.v("Hue"), ticks) & 0xFFFFFF;
             int color = (alpha << 24) | rgb;
-            String s = (d.crit ? "* " : "-") + String.format(fmt, d.amount);
+            String s = (d.heal ? "+" : d.crit ? "* " : "-") + String.format(fmt, d.amount);
 
             ms.push();
             ms.translate(d.pos.x - cam.x, y - cam.y, d.pos.z - cam.z);

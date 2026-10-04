@@ -3,7 +3,6 @@ package com.deadvisuals;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.ParticlesMode;
 
 public final class Perf {
     private Perf() {
@@ -11,7 +10,6 @@ public final class Perf {
 
     private static boolean applied;
     private static int counter;
-    private static ParticlesMode oParticles;
     private static boolean oShadows;
     private static boolean oAo;
     private static boolean oVsync;
@@ -37,7 +35,6 @@ public final class Perf {
         GameOptions o = mc.options;
         Module m = Mods.PERF;
         if (!applied) {
-            oParticles = o.getParticles().getValue();
             oShadows = o.getEntityShadows().getValue();
             oAo = o.getAo().getValue();
             oVsync = o.getEnableVsync().getValue();
@@ -46,7 +43,6 @@ public final class Perf {
             oMaxFps = o.getMaxFps().getValue();
             oEntDist = o.getEntityDistanceScaling().getValue();
         }
-        if (m.on("Particles minimal")) o.getParticles().setValue(ParticlesMode.MINIMAL);
         if (m.on("No entity shadows")) o.getEntityShadows().setValue(false);
         if (m.on("No clouds")) o.getCloudRenderMode().setValue(CloudRenderMode.OFF);
         if (m.on("Biome blend 0")) o.getBiomeBlendRadius().setValue(0);
@@ -59,7 +55,6 @@ public final class Perf {
 
     private static void restore(MinecraftClient mc) {
         GameOptions o = mc.options;
-        o.getParticles().setValue(oParticles);
         o.getEntityShadows().setValue(oShadows);
         o.getAo().setValue(oAo);
         o.getEnableVsync().setValue(oVsync);

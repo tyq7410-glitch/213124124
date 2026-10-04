@@ -3,6 +3,7 @@ package com.deadvisuals;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 
 import java.util.Random;
@@ -61,6 +62,14 @@ public final class Cosmetics {
                             p.getZ() + (R.nextDouble() - 0.5) * 2 * r, 0, -0.02, 0);
                 }
                 continue;
+            } else if (shape >= 7) {
+                if (t % 4 == 0) {
+                    ParticleEffect pe = shape == 7 ? ParticleTypes.HEART : shape == 8 ? ParticleTypes.FLAME : ParticleTypes.NOTE;
+                    double aa = t * 0.15 * sp + off;
+                    double yy = h + Math.sin(t * 0.1 + k) * 0.5;
+                    w.addParticle(pe, p.getX() + Math.cos(aa) * r, p.getY() + yy, p.getZ() + Math.sin(aa) * r, 0, 0.02, 0);
+                }
+                continue;
             } else {
                 y = h + Math.sin(t * 0.1 + k) * 0.5;
                 a = t * 0.15 * sp + off;
@@ -101,6 +110,21 @@ public final class Cosmetics {
                     break;
                 case 7:
                     w.addParticle(ParticleTypes.CHERRY_LEAVES, x, y + 0.6, z, 0, -0.01, 0);
+                    break;
+                case 8:
+                    w.addParticle(ParticleTypes.PORTAL, x, y + 0.5, z, 0, 0.02, 0);
+                    break;
+                case 9:
+                    w.addParticle(ParticleTypes.ENCHANT, x, y + 0.8, z, 0, 0.02, 0);
+                    break;
+                case 10:
+                    w.addParticle(ParticleTypes.LARGE_SMOKE, x, y + 0.2, z, 0, 0.01, 0);
+                    break;
+                case 11:
+                    w.addParticle(ParticleTypes.GLOW, x, y + 0.3, z, 0, 0.02, 0);
+                    break;
+                case 12:
+                    w.addParticle(ParticleTypes.NOTE, x, y + 0.6, z, 0, 0.02, 0);
                     break;
                 default:
                     w.addParticle(dust, x, y, z, 0, 0, 0);

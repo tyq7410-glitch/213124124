@@ -5,11 +5,8 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-base { archivesName = project.archives_base_name }
-
-repositories {
-    maven { url = 'https://maven.fabricmc.net/' }
-    mavenCentral()
+base {
+    archivesName = project.archives_base_name
 }
 
 dependencies {
@@ -19,10 +16,25 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
-processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") { expand "version": project.version }
+tasks.register('genAssets', Exec) {
+    workingDir projectDir
+    commandLine 'python3', 'tools/gen_assets.py'
 }
 
-tasks.withType(JavaCompile).configureEach { it.options.release = 21 }
-java { withSourcesJar(); sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
+processResources {
+    dependsOn 'genAssets'
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}

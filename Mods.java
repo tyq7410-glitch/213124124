@@ -15,8 +15,17 @@ public final class Mods {
     }
 
     public static final String[] CATS = {"combat", "cosmetics", "emotes", "hud", "world", "extras"};
-    private static final String[] CM = {"Gold", "Red", "White", "Ice", "Rainbow", "Custom",
-            "Purple", "Green", "Pink", "Cyan", "Orange", "Sunset", "Aurora"};
+    private static final String[] CM = Colors.NAMES;
+    private static final String[] WS = {"Angel", "Demon", "Dead", "Neon", "Ice", "Gold", "Galaxy",
+            "Blood", "Sakura", "Void", "Toxic", "Fire", "Mono"};
+    private static final String[] SKYC = withOff(Colors.NAMES);
+
+    private static String[] withOff(String[] n) {
+        String[] r = new String[n.length + 1];
+        r[0] = "Off";
+        System.arraycopy(n, 0, r, 1, n.length);
+        return r;
+    }
     public static final List<Module> ALL = new ArrayList<>();
     private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("deadvisuals.json");
 
@@ -36,7 +45,7 @@ public final class Mods {
     public static final Module NUM = reg(new Module("damage numbers", "combat", true)
             .n("Scale", 1, 0.4, 3, 0.1).n("Lifetime", 30, 10, 80, 1).n("Rise", 0.8, 0.2, 3, 0.1)
             .m("Color", 0, CM).n("Hue", 0, 0, 360, 5).m("Crit color", 1, CM)
-            .m("Decimals", 1, "0", "1", "2").b("Fade", true).b("Through walls", true));
+            .m("Decimals", 1, "0", "1", "2").b("Fade", true).b("Through walls", true).b("Show heal", true));
 
     public static final Module THUD = reg(new Module("target hud", "combat", true)
             .m("Style", 0, "Dead", "Minimal", "Compact")
@@ -63,22 +72,22 @@ public final class Mods {
             .n("Amount", 30, 10, 100, 5).m("Sound", 1, "None", "Chime", "Orb", "Totem"));
 
     public static final Module WINGS = reg(new Module("wings", "cosmetics", true)
-            .m("Style", 2, "Angel", "Demon", "Dead", "Neon", "Ice", "Gold", "Galaxy")
+            .m("Style", 2, WS)
             .n("Scale", 1, 0.5, 2, 0.1).n("Flap speed", 1, 0.2, 3, 0.1).n("Flap angle", 0.4, 0, 1, 0.05)
             .n("Spread", 0.5, 0.1, 1.2, 0.05).n("Height", 0, -4, 6, 0.5).b("Hide with elytra", true));
 
     public static final Module AURA = reg(new Module("aura", "cosmetics", true)
             .m("Style", 0, CM).n("Hue", 300, 0, 360, 5)
-            .m("Shape", 0, "Orbit", "Helix", "Halo", "Ring", "Vortex", "Sparkle", "Sakura")
+            .m("Shape", 0, "Orbit", "Helix", "Halo", "Ring", "Vortex", "Sparkle", "Sakura", "Hearts", "Flames", "Notes")
             .n("Count", 3, 1, 8, 1).n("Radius", 0.9, 0.4, 2, 0.1).n("Speed", 1, 0.3, 3, 0.1)
             .n("Size", 0.8, 0.4, 2, 0.1).n("Height", 0.9, 0, 2, 0.1));
 
     public static final Module TRAIL = reg(new Module("trail", "cosmetics", false)
-            .m("Type", 0, "Dust", "Soul", "Flame", "End rod", "Hearts", "Snow", "Electric", "Sakura")
+            .m("Type", 0, "Dust", "Soul", "Flame", "End rod", "Hearts", "Snow", "Electric", "Sakura", "Portal", "Enchant", "Smoke", "Glow", "Note")
             .m("Color", 4, CM).n("Hue", 0, 0, 360, 5).n("Density", 2, 1, 6, 1));
 
     public static final Module PETS = reg(new Module("pet", "cosmetics", true)
-            .m("Style", 0, "Ghost", "Imp", "Cube", "Cat")
+            .m("Style", 0, "Ghost", "Imp", "Cube", "Cat", "Fox", "Slime", "Pumpkin", "Frost", "Gold")
             .n("Scale", 1, 0.5, 2, 0.1).n("Distance", 1.2, 0.6, 3, 0.1).n("Height", 1.5, 0.5, 2.5, 0.1)
             .n("Speed", 6, 2, 15, 1).n("Bob", 1, 0, 2, 0.1).b("Sparkles", true));
 
@@ -105,7 +114,8 @@ public final class Mods {
 
     public static final Module INFO = reg(new Module("info hud", "hud", true)
             .m("Anchor", 0, ANCH).n("X offset", 6, -300, 300, 1).n("Y offset", 6, -300, 300, 1)
-            .b("FPS", true).b("Ping", true).b("Coords", true).b("Direction", true));
+            .b("FPS", true).b("Ping", true).b("Coords", true).b("Direction", true)
+            .b("Speed", false).b("Hunger", false).b("Light", false).b("Server", false));
 
     public static final Module LOWHP = reg(new Module("low hp pulse", "hud", true)
             .n("Threshold", 30, 10, 60, 5).m("Color", 1, CM).n("Hue", 0, 0, 360, 5)
@@ -146,14 +156,42 @@ public final class Mods {
             .m("Time", 0, "Off", "Sunrise", "Day", "Noon", "Sunset", "Night", "Midnight", "Cycle", "Custom")
             .n("Custom time", 6000, 0, 24000, 250).n("Cycle speed", 5, 1, 60, 1)
             .m("Weather", 0, "Default", "Clear", "Rain", "Thunder")
-            .m("Sky color", 0, "Off", "Gold", "Red", "White", "Ice", "Rainbow", "Custom",
-                    "Purple", "Green", "Pink", "Cyan", "Orange", "Sunset", "Aurora")
+            .m("Sky color", 0, SKYC)
             .n("Sky hue", 280, 0, 360, 5).n("Sky strength", 0.6, 0, 1, 0.05));
+
+    public static final Module CAPE = reg(new Module("cape", "cosmetics", false)
+            .m("Style", 2, WS).n("Scale", 1, 0.5, 2, 0.1).b("Hide with elytra", true));
+
+    public static final Module ZOOM = reg(new Module("zoom", "extras", true)
+            .n("Level", 30, 30, 70, 1).b("Smooth", true));
+
+    public static final Module TWEAKS = reg(new Module("visual tweaks", "extras", false)
+            .b("No FOV effects", true).b("No distortion", true).b("No view bobbing", false));
+
+    public static final Module REACH = reg(new Module("reach display", "hud", true)
+            .m("Anchor", 0, ANCH).n("X offset", 6, -300, 300, 1).n("Y offset", 100, -300, 300, 1));
+
+    public static final Module JUMP = reg(new Module("jump particles", "cosmetics", true)
+            .m("Color", 4, CM).n("Hue", 0, 0, 360, 5).m("Type", 0, "Ring", "Double ring")
+            .n("Amount", 20, 8, 60, 1).n("Radius", 0.6, 0.3, 1.5, 0.1).n("Size", 1, 0.4, 3, 0.1));
+
+    public static final Module TRACK = reg(new Module("projectile trail", "world", true)
+            .m("Color", 3, CM).n("Hue", 190, 0, 360, 5).n("Size", 0.8, 0.4, 2, 0.1)
+            .n("Density", 2, 1, 6, 1).b("Only mine", true));
+
+    public static final Module WATER = reg(new Module("watermark", "hud", true)
+            .m("Position", 0, "Top center", "Top left", "Top right").n("Y offset", 4, 0, 100, 1)
+            .b("Username", true).b("FPS", true).b("Ping", true).b("Clock", true));
+
+    public static final Module KEYS = reg(new Module("keystrokes", "hud", true)
+            .m("Anchor", 3, ANCH).n("X offset", 6, -300, 300, 1).n("Y offset", 70, -300, 300, 1)
+            .b("Space", true).b("Mouse", true).b("CPS", true));
 
     public static final Module HELPER = reg(new Module("helper", "extras", true)
             .b("Voice", true).n("Pitch", 1.6, 0.8, 2, 0.1).n("Volume", 0.6, 0.1, 1, 0.1)
             .b("Hit messages", true).b("Low hp warning", true).n("Duration", 3, 1, 8, 1)
-            .m("Face", 0, "^_^", "^o^", ">w<", "uwu"));
+            .m("Face", 0, "^_^", "^o^", ">w<", "uwu")
+            .m("Style", 0, "Corner", "Island"));
 
     public static final Module MARKS = reg(new Module("marks", "extras", true)
             .b("Mark on death", true).m("Color", 9, CM).n("Hue", 190, 0, 360, 5).n("Max marks", 5, 1, 12, 1)
@@ -162,7 +200,7 @@ public final class Mods {
     public static final Module PERF = reg(new Module("performance", "extras", true)
             .b("Unlimited FPS", true).b("VSync off", true).b("No entity shadows", true)
             .b("No clouds", true).b("Biome blend 0", true).b("Entities closer", true)
-            .b("Smooth light off", false).b("Particles minimal", false)
+            .b("Smooth light off", false)
             .b("Adaptive effects", true).n("Low FPS limit", 60, 20, 144, 5));
 
     public static final Module TITLE = reg(new Module("main menu", "extras", true)

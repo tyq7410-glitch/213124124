@@ -24,7 +24,8 @@ public final class Pets {
     private Pets() {
     }
 
-    private static final String[] STYLES = {"ghost", "imp", "cube", "cat"};
+    private static final String[] STYLES = {"ghost", "imp", "cube", "cat", "fox", "slime", "pumpkin", "frost", "gold"};
+    private static final boolean[] EARS = {false, true, false, true, true, false, false, false, false};
     private static ModelPart model;
     private static Identifier[] tex;
     private static Vec3d pos;
@@ -82,7 +83,7 @@ public final class Pets {
         yawS += MathHelper.wrapDegrees(by - yawS) * (1f - (float) Math.exp(-8 * dt));
 
         int style = m.mode("Style");
-        boolean ears = style == 1 || style == 3;
+        boolean ears = EARS[style];
         model.getChild("earL").visible = ears;
         model.getChild("earR").visible = ears;
 

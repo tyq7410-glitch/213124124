@@ -2,6 +2,7 @@ package com.deadvisuals;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuScreen extends Screen {
-    private static final int ACCENT = 0xFFB3122A;
+    private static final int ACCENT = Ui.ACCENT;
 
     private static final class Row {
         int x, y, w, h;
@@ -22,10 +23,11 @@ public class MenuScreen extends Screen {
     private final long born = System.nanoTime();
     private long lastNs = born;
     private Row drag;
+    private String tip;
     private int cat = 0;
     private int scroll = 0;
     private int contentH = 0;
-    private int hdrX0, hdrX1;
+    private int hdrX0, hdrX1, hdr2X0, hdr2X1, hdr3X0, hdr3X1;
     private int px, py, pw = 360, ph, cx0, cy0, cy1, cw;
 
     public MenuScreen() {
@@ -45,13 +47,14 @@ public class MenuScreen extends Screen {
         float pr = Math.min(1f, (nowNs - born) / 2.2e8f);
         float e = 1f - (1f - pr) * (1f - pr) * (1f - pr);
         boolean single = only != null;
+        tip = null;
 
-        ph = Math.min(height - 30, 320);
+        ph = Math.min(height - 70, 320);
         px = (width - pw) / 2;
-        py = (height - ph) / 2;
+        py = (height - ph) / 2 + 8;
         cx0 = px + 8;
         cw = pw - 16;
-        cy0 = py + (single ? 34 : 44);
+        cy0 = py + (single ? 36 : 46);
         cy1 = py + ph - 18;
 
         g.fill(0, 0, width, height, ((int) (0x90 * e)) << 24);
@@ -59,12 +62,13 @@ public class MenuScreen extends Screen {
         ms.push();
         ms.translate(0f, (1f - e) * 14f, 0f);
 
-        g.fill(px, py, px + pw, py + ph, 0xF00A0A0A);
-        g.fill(px, py, px + pw, py + 2, ACCENT);
-        g.fill(px, py + ph - 1, px + pw, py + ph, 0xFF222222);
-        g.fill(px, py, px + 1, py + ph, 0xFF222222);
-        g.fill(px + pw - 1, py, px + pw, py + ph, 0xFF222222);
-        g.drawTextWithShadow(textRenderer, "dead visuals", px + 10, py + 9, ACCENT);
+        Ui.rrect(g, px - 1, py - 1, pw + 2, ph + 2, 9, 0xFF26262C);
+        Ui.rrect(g, px, py, pw, ph, 8, 0xF00B0B0E);
+        Ui.hgrad(g, px + 10, py + 1, pw - 20, 2, ACCENT, Ui.ACCENT2);
+        Ui.rrect(g, px + 10, py + 9, 7, 7, 3, 0xFFFF5F57);
+        Ui.rrect(g, px + 21, py + 9, 7, 7, 3, 0xFFFEBC2E);
+        Ui.rrect(g, px + 32, py + 9, 7, 7, 3, 0xFF28C840);
+        g.drawTextWithShadow(textRenderer, "dead visuals", px + 48, py + 9, ACCENT);
 
         String hl = single ? "< back" : "target hud >";
         int hw = textRenderer.getWidth(hl);
@@ -72,17 +76,39 @@ public class MenuScreen extends Screen {
         hdrX1 = px + pw - 10;
         boolean hh = mx >= hdrX0 && mx < hdrX1 && my >= py + 5 && my < py + 20;
         g.drawTextWithShadow(textRenderer, hl, hdrX0, py + 9, hh ? 0xFFFFFFFF : 0xFF909090);
+        if (hh) tip = single ? "back - назад до всіх функцій" : "target hud - окремі налаштування панелі ворога";
+        if (!single) {
+            String h2 = "hud editor";
+            int w2 = textRenderer.getWidth(h2);
+            hdr2X1 = hdrX0 - 14;
+            hdr2X0 = hdr2X1 - w2;
+            boolean h2h = mx >= hdr2X0 && mx < hdr2X1 && my >= py + 5 && my < py + 20;
+            if (h2h) tip = "hud editor - перетягуй панелі інтерфейсу мишкою";
+            g.drawTextWithShadow(textRenderer, h2, hdr2X0, py + 9, h2h ? 0xFFFFFFFF : 0xFF909090);
+            String h3 = "textures";
+            int w3 = textRenderer.getWidth(h3);
+            hdr3X1 = hdr2X0 - 14;
+            hdr3X0 = hdr3X1 - w3;
+            boolean h3h = mx >= hdr3X0 && mx < hdr3X1 && my >= py + 5 && my < py + 20;
+            if (h3h) tip = "textures - у Resource Packs вибери текстури зброї";
+            g.drawTextWithShadow(textRenderer, h3, hdr3X0, py + 9, h3h ? 0xFFFFFFFF : 0xFF909090);
+        } else {
+            hdr2X0 = -1;
+            hdr2X1 = -1;
+            hdr3X0 = -1;
+            hdr3X1 = -1;
+        }
 
         if (single) {
-            g.drawTextWithShadow(textRenderer, only, px + 10, py + 24, 0xFFFFFFFF);
-            g.fill(px + 10, py + 34 - 2, px + pw - 10, py + 34 - 1, ACCENT);
+            g.drawTextWithShadow(textRenderer, only, px + 12, py + 24, 0xFFFFFFFF);
+            Ui.hgrad(g, px + 10, py + 34, pw - 20, 1, ACCENT, Ui.ACCENT2);
         } else {
             int tabW = pw / Mods.CATS.length;
             for (int i = 0; i < Mods.CATS.length; i++) {
                 String name = Mods.CATS[i];
+                if (i == cat) Ui.rrect(g, px + tabW * i + 4, py + 22, tabW - 8, 16, 6, 0x50B3122A);
                 int tx = px + tabW * i + tabW / 2 - textRenderer.getWidth(name) / 2;
                 g.drawTextWithShadow(textRenderer, name, tx, py + 26, i == cat ? 0xFFFFFFFF : 0xFF707070);
-                if (i == cat) g.fill(px + tabW * i + 10, py + 37, px + tabW * (i + 1) - 10, py + 38, ACCENT);
             }
         }
 
@@ -102,10 +128,13 @@ public class MenuScreen extends Screen {
                 r.m = m;
                 rows.add(r);
                 boolean hov = mx >= r.x && mx < r.x + r.w && my >= r.y && my < r.y + r.h && my >= cy0 && my < cy1;
-                g.fill(r.x, r.y, r.x + r.w, r.y + r.h, hov ? 0xFF1A1A1A : 0xFF111111);
-                g.fill(r.x, r.y, r.x + 3, r.y + r.h, Colors.lerp(0xFF2C2C2C, ACCENT, m.anim));
+                if (hov) tip = Lang.module(m);
+                Ui.rrect(g, r.x, r.y, r.w, r.h, 5, hov ? 0xFF1B1B20 : 0xFF121216);
                 g.drawTextWithShadow(textRenderer, m.name, r.x + 9, r.y + 5, Colors.lerp(0xFF8A8A8A, 0xFFFFFFFF, m.anim));
-                g.drawTextWithShadow(textRenderer, m.open ? "v" : ">", r.x + r.w - 10, r.y + 5, 0xFF666666);
+                g.drawTextWithShadow(textRenderer, m.open ? "v" : ">", r.x + r.w - 50, r.y + 5, 0xFF666666);
+                int tx = r.x + r.w - 32;
+                Ui.rrect(g, tx, r.y + 4, 24, 10, 5, Colors.lerp(0xFF34343A, ACCENT, m.anim));
+                Ui.rrect(g, tx + 2 + (int) (m.anim * 14), r.y + 5, 8, 8, 4, 0xFFFFFFFF);
                 cy += 20;
             }
             float tgt = (single || m.open) ? 1f : 0f;
@@ -130,10 +159,11 @@ public class MenuScreen extends Screen {
                         i++;
                         if (m.openA >= 0.98f) rows.add(sr);
                         boolean sh = mx >= sr.x && mx < sr.x + sr.w && my >= sr.y && my < sr.y + sr.h && my >= cy0 && my < cy1;
-                        g.fill(sr.x, sr.y, sr.x + sr.w, sr.y + sr.h, sh ? 0xFF141414 : 0xFF0D0D0D);
+                        if (sh) tip = Lang.setting(m, s);
+                        Ui.rrect(g, sr.x, sr.y, sr.w, 15, 4, sh ? 0xFF16161B : 0xFF0E0E12);
                         if (s.type == Setting.Type.NUM) {
                             double f = (s.num - s.min) / (s.max - s.min);
-                            g.fill(sr.x, sr.y, sr.x + (int) (sr.w * f), sr.y + sr.h, 0x70B3122A);
+                            Ui.rrect(g, sr.x, sr.y, (int) (sr.w * f), 15, 4, 0x70B3122A);
                         }
                         g.drawTextWithShadow(textRenderer, s.name.toLowerCase(), sr.x + 6, sr.y + 4, 0xFFBBBBBB);
                         String val = s.display();
@@ -158,6 +188,11 @@ public class MenuScreen extends Screen {
 
         g.drawCenteredTextWithShadow(textRenderer, Text.literal("left click: toggle   right click: settings"),
                 px + pw / 2, py + ph - 13, 0xFF555555);
+
+        String tt = tip != null ? tip : "наведи на функцію - тут буде опис";
+        Ui.rrect(g, px, py - 22, pw, 16, 8, 0xE00B0B0E);
+        g.drawCenteredTextWithShadow(textRenderer, Text.literal(tt), px + pw / 2, py - 18,
+                tip != null ? 0xFFFFFFFF : 0xFF666666);
         ms.pop();
     }
 
@@ -166,6 +201,16 @@ public class MenuScreen extends Screen {
         if (my >= py + 5 && my < py + 20 && mx >= hdrX0 && mx < hdrX1) {
             Mods.save();
             client.setScreen(only == null ? new MenuScreen("target hud") : new MenuScreen());
+            return true;
+        }
+        if (only == null && my >= py + 5 && my < py + 20 && mx >= hdr2X0 && mx < hdr2X1) {
+            Mods.save();
+            client.setScreen(new HudEditorScreen(this));
+            return true;
+        }
+        if (only == null && my >= py + 5 && my < py + 20 && mx >= hdr3X0 && mx < hdr3X1) {
+            Mods.save();
+            client.setScreen(new OptionsScreen(this, client.options));
             return true;
         }
         if (only == null && my >= py + 22 && my < py + 40 && mx >= px && mx < px + pw) {

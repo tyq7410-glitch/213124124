@@ -30,6 +30,9 @@ public class DeadVisuals implements ClientModInitializer {
         KeyBinding clearKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.deadvisuals.clearmarks", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_H, "category.deadvisuals"));
 
+        KeyBinding zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.deadvisuals.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.deadvisuals"));
+
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             if (mc.currentScreen != null && mc.currentScreen.getClass() == TitleScreen.class
                     && Mods.TITLE.enabled && Mods.TITLE.on("Custom menu")) {
@@ -40,6 +43,8 @@ public class DeadVisuals implements ClientModInitializer {
             while (markKey.wasPressed()) Marks.place(mc);
             while (clearKey.wasPressed()) Marks.clear();
             Perf.tick(mc);
+            Tweaks.tick(mc);
+            Zoom.tick(mc, zoomKey.isPressed());
             Fx.tick(mc);
         });
 
@@ -59,5 +64,12 @@ public class DeadVisuals implements ClientModInitializer {
                 ResourceManagerHelper.registerBuiltinResourcePack(
                         Identifier.of("deadvisuals", "crosshair"), c,
                         Text.literal("Dead Visuals crosshair"), ResourcePackActivationType.DEFAULT_ENABLED));
+        String[] wp = {"neon", "ice", "gold", "galaxy", "blood", "sakura", "void", "toxic", "fire", "mono"};
+        for (String n : wp) {
+            FabricLoader.getInstance().getModContainer("deadvisuals").ifPresent(c ->
+                    ResourceManagerHelper.registerBuiltinResourcePack(
+                            Identifier.of("deadvisuals", "weapons_" + n), c,
+                            Text.literal("Dead Visuals weapons: " + n), ResourcePackActivationType.NORMAL));
+        }
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -20,6 +21,7 @@ public final class Hud2 {
     private Hud2() {
     }
 
+    static final java.util.Map<String, int[]> SIZES = new java.util.HashMap<>();
     private static int combo;
     private static int kills;
     private static long lastHitAt;
@@ -64,13 +66,14 @@ public final class Hud2 {
         for (String s : lines) w = Math.max(w, tr.getWidth(s));
         w += 14;
         int h = lines.size() * 11 + 6;
+        SIZES.put(m.name, new int[]{w, h});
         int a = m.mode("Anchor");
         int ox = (int) m.v("X offset");
         int oy = (int) m.v("Y offset");
         int x = (a == 1 || a == 3) ? sw - w - ox : ox;
         int y = a >= 2 ? sh - h - oy : oy;
-        g.fill(x, y, x + w, y + h, 0xB0090909);
-        g.fill(x, y, x + 2, y + h, 0xFFB3122A);
+        Ui.rrect(g, x, y, w, h, 5, 0xB00B0B0E);
+        Ui.hgrad(g, x + 6, y, w - 12, 1, Ui.ACCENT, Ui.ACCENT2);
         for (int i = 0; i < lines.size(); i++) {
             g.drawTextWithShadow(tr, lines.get(i), x + 8, y + 4 + i * 11, cols.get(i));
         }
@@ -87,6 +90,15 @@ public final class Hud2 {
     public static void render(DrawContext g, MinecraftClient mc, int sw, int sh, long now) {
         ClientPlayerEntity p = mc.player;
         if (p == null) return;
+
+        Module rm = Mods.REACH;
+        if (rm.enabled && now - Fx.reachAt < 3000) {
+            List<String> rl = new ArrayList<>();
+            List<Integer> rc = new ArrayList<>();
+            rl.add(String.format("reach %.2f", Fx.lastReach));
+            rc.add(0xFFFFFFFF);
+            panel(g, mc, rm, rl, rc, sw, sh);
+        }
 
         Module cm = Mods.COMBO;
         if (cm.enabled) {
@@ -182,6 +194,23 @@ public final class Hud2 {
             }
             if (nm.on("Direction")) {
                 l.add(p.getHorizontalFacing().asString());
+                c.add(0xFFAAAAAA);
+            }
+            if (nm.on("Speed")) {
+                l.add(String.format("speed %.1f b/s", p.getVelocity().horizontalLength() * 20));
+                c.add(0xFFFFFFFF);
+            }
+            if (nm.on("Hunger")) {
+                l.add(String.format("food %d  sat %.1f", p.getHungerManager().getFoodLevel(), p.getHungerManager().getSaturationLevel()));
+                c.add(0xFFFFFFFF);
+            }
+            if (nm.on("Light") && mc.world != null) {
+                l.add("light " + mc.world.getLightLevel(p.getBlockPos()));
+                c.add(0xFFFFFFFF);
+            }
+            if (nm.on("Server")) {
+                ServerInfo si = mc.getCurrentServerEntry();
+                l.add(si == null ? "singleplayer" : si.address);
                 c.add(0xFFAAAAAA);
             }
             panel(g, mc, nm, l, c, sw, sh);
