@@ -1,20 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "deadvisuals",
-  "version": "${version}",
-  "name": "Dead Visuals",
-  "description": "PvP visuals and cosmetics: hit particles, target HUD, damage numbers, trajectory, wings, auras, emotes, item textures.",
-  "authors": ["you"],
-  "license": "MIT",
+  "id": "auroravisuals",
+  "version": "1.0.0",
+  "name": "Aurora Visuals",
+  "description": "Client-side HUD, crosshair and cosmetic visuals with big settings.",
   "environment": "client",
-  "mixins": ["deadvisuals.mixins.json"],
-  "entrypoints": {
-    "client": ["com.deadvisuals.DeadVisuals"]
-  },
-  "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "~1.21.4",
-    "java": ">=21",
-    "fabric-api": "*"
-  }
+  "entrypoints": { "client": ["dev.auroravisuals.AuroraVisuals"] },
+  "depends": { "fabricloader": ">=0.18.0", "minecraft": "~1.21.11", "fabric-api": "*" }
 }

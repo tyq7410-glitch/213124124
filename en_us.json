@@ -1,8 +1,6 @@
 {
-  "key.deadvisuals.menu": "Open menu",
-  "key.deadvisuals.emotes": "Emote wheel",
-  "key.deadvisuals.zoom": "Zoom (hold)",
-  "key.deadvisuals.mark": "Place mark",
-  "key.deadvisuals.clearmarks": "Clear marks",
-  "category.deadvisuals": "Dead Visuals"
+  "key.auroravisuals.menu": "Open menu",
+  "key.auroravisuals.zoom": "Zoom",
+  "key.auroravisuals.copy": "Copy coords",
+  "key.category.auroravisuals.main": "Aurora Visuals"
 }
